@@ -1,9 +1,9 @@
 import React from 'react';
 import Typography from '@material-ui/core/Typography';
-import {makeStyles} from '@material-ui/core/styles';
+import { makeStyles } from '@material-ui/core/styles';
 import Link from '@material-ui/core/Link';
-import Container from "@material-ui/core/Container";
-import Header from "components/MainLayout/components/Header";
+import Container from '@material-ui/core/Container';
+import Header from 'components/MainLayout/components/Header';
 
 function Copyright() {
   return (
@@ -18,8 +18,18 @@ function Copyright() {
   );
 }
 
-const useStyles = makeStyles((theme) => ({
+const useStyles = makeStyles(theme => ({
+  root: {
+    display: 'flex',
+    flexDirection: 'column',
+    minHeight: '100vh',
+  },
+  content: {
+    flex: 1,
+    display: 'flex',
+  },
   container: {
+    minHeight: '100%',
     paddingBottom: theme.spacing(8),
   },
   footer: {
@@ -28,13 +38,13 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const MainLayout: React.FC = ({children}) => {
+const MainLayout: React.FC = ({ children }) => {
   const classes = useStyles();
 
   return (
-    <>
-      <Header/>
-      <main>
+    <div className={classes.root}>
+      <Header />
+      <main className={classes.content}>
         <Container className={classes.container} maxWidth="md">
           {children!}
         </Container>
@@ -43,9 +53,9 @@ const MainLayout: React.FC = ({children}) => {
         <Typography variant="subtitle1" align="center" color="textSecondary" component="p">
           Thank you for your purchase!
         </Typography>
-        <Copyright/>
+        <Copyright />
       </footer>
-    </>
+    </div>
   );
 };
 
