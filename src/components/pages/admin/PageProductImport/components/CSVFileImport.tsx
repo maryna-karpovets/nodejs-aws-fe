@@ -1,9 +1,9 @@
-import React, {useState} from 'react';
-import {makeStyles} from '@material-ui/core/styles';
-import Typography from "@material-ui/core/Typography";
+import React, { ChangeEvent, useState } from 'react';
+import { makeStyles } from '@material-ui/core/styles';
+import Typography from '@material-ui/core/Typography';
 import axios from 'axios';
 
-const useStyles = makeStyles((theme) => ({
+const useStyles = makeStyles(theme => ({
   content: {
     backgroundColor: theme.palette.background.paper,
     padding: theme.spacing(3, 0, 3),
@@ -11,60 +11,51 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 type CSVFileImportProps = {
-  url: string,
-  title: string
+  url: string;
+  title: string;
 };
 
-export default function CSVFileImport({url, title}: CSVFileImportProps) {
+export default function CSVFileImport({ url, title }: CSVFileImportProps) {
   const classes = useStyles();
-  const [file, setFile] = useState<any>();
-  const [uploadUrl, setUploadUrl] = useState<any>();
+  const [file, setFile] = useState<File | null>();
 
-  const createFile = (file: any) => {
-    let reader = new FileReader()
-    reader.onload = (e: any) => {
-      console.log(e.target.result);
-      setFile(e.target.result);
+  const onFileChange = (event: ChangeEvent<HTMLInputElement> | DragEvent) => {
+    let files =
+      (event as ChangeEvent<HTMLInputElement>).target.files ||
+      (event as DragEvent).dataTransfer?.files;
+
+    if (!files?.length) {
+      return;
     }
-    reader.readAsDataURL(file)
-  };
 
-  const onFileChange = (e: any) => {
-    console.log(e);
-    let files = e.target.files || e.dataTransfer.files
-    if (!files.length) return
-    createFile(files[0])
+    setFile(files.item(0));
   };
 
   const removeFile = () => {
-    setFile('');
+    setFile(null);
   };
 
-  const uploadFile = async (e: any) => {
-      // Get the presigned URL
-      const response = await axios({
-        method: 'GET',
-        url
-      })
-      console.log('Response: ', response.data)
-      console.log('Uploading: ', file)
-      let binary = atob(file.split(',')[1])
-      let array = []
-      for (var i = 0; i < binary.length; i++) {
-        array.push(binary.charCodeAt(i))
-      }
-      let blobData = new Blob([new Uint8Array(array)], {type: 'text/plain'})
-      console.log('Uploading to: ', response.data.uploadURL)
-      const result = await fetch(response.data.uploadURL, {
-        method: 'PUT',
-        body: blobData
-      })
-      console.log('Result: ', result)
-      // Final URL for the user doesn't need the query string params
-      setUploadUrl(response.data.uploadURL.split('?')[0]);
-      setFile('');
-    }
-  ;
+  const uploadFile = async () => {
+    const response = await axios({
+      method: 'GET',
+      url,
+      params: {
+        name: encodeURIComponent(file?.name!),
+      },
+    });
+
+    console.log('File to upload: ', file?.name!);
+    console.log('Uploading to: ', response.data);
+
+    const result = await fetch(response.data, {
+      method: 'PUT',
+      body: file,
+    });
+
+    console.log('Result: ', result);
+
+    setFile(null);
+  };
 
   return (
     <div className={classes.content}>
@@ -72,11 +63,11 @@ export default function CSVFileImport({url, title}: CSVFileImportProps) {
         {title}
       </Typography>
       {!file ? (
-          <input type="file" onChange={onFileChange}/>
+        <input type="file" onChange={onFileChange} />
       ) : (
         <div>
-          {!uploadUrl && <button onClick={removeFile}>Remove file</button>}
-          {!uploadUrl && <button onClick={uploadFile}>Upload file</button>}
+          <button onClick={removeFile}>Remove file</button>
+          <button onClick={uploadFile}>Upload file</button>
         </div>
       )}
     </div>
