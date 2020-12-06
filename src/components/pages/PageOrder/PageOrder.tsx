@@ -106,8 +106,8 @@ export default function PageOrder() {
 
   const onChangeStatus = (values: FormikValues) => {
     return axios
-      .put(`${API_PATHS.order}/order/${order.id}/status`, values)
-      .then(({ data }) => setOrder(data));
+      .put(`${API_PATHS.cart}/orders/${order.id}/status`, values)
+      .then(({ data }) => setOrder(data?.data?.order));
   };
 
   useEffect(() => {
@@ -115,19 +115,30 @@ export default function PageOrder() {
       setIsLoading(false);
       return;
     }
+
     const promises: any[] = [
       axios.get(`${API_PATHS.product}/product`),
-      axios.get(`${API_PATHS.order}/order/${id}`),
+      axios.get(`${API_PATHS.cart}/orders/${id}`),
     ];
-    Promise.all(promises).then(([{ data: products }, { data: order }]) => {
-      const cartItems: CartItem[] = order.items.map((i: OrderItem) => ({
-        product: products.find((p: Product) => p.id === i.productId),
-        count: i.count,
-      }));
-      setOrder(order);
-      setCartItems(cartItems);
-      setIsLoading(false);
-    });
+
+    Promise.all(promises).then(
+      ([
+        { data: products },
+        {
+          data: {
+            data: { order },
+          },
+        },
+      ]) => {
+        const cartItems: CartItem[] = order.items.map((i: OrderItem) => ({
+          product: products.find((p: Product) => p.id === i.productId),
+          count: i.count,
+        }));
+        setOrder(order);
+        setCartItems(cartItems);
+        setIsLoading(false);
+      }
+    );
   }, [id]);
 
   if (isLoading) return <p>loading...</p>;

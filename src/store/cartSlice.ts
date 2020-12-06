@@ -1,10 +1,11 @@
-import {createSlice, PayloadAction} from '@reduxjs/toolkit';
-import {RootState} from 'store/store';
-import {Product} from "models/Product";
-import {CartItem} from "models/CartItem";
+import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+
+import { Product } from 'models/Product';
+import { CartItem } from 'models/CartItem';
+import { RootState } from './store';
 
 interface CartState {
-  items: CartItem[]
+  items: CartItem[];
 }
 
 const initialState: CartState = {
@@ -15,21 +16,26 @@ export const cartSlice = createSlice({
   name: 'cart',
   initialState,
   reducers: {
+    updateFromApi: (state, { payload: { items } }: PayloadAction<CartState>) => {
+      return {
+        items: [...items],
+      };
+    },
     // Use the PayloadAction type to declare the contents of `action.payload`
     addToCart: (state, action: PayloadAction<Product>) => {
-      const {items} = state;
-      const {payload: product} = action;
+      const { items } = state;
+      const { payload: product } = action;
       const existingItem = items.find(i => i.product.id === product.id);
       if (existingItem) {
         existingItem.count++;
         return;
       }
-      items.push({product, count: 1});
+      items.push({ product, count: 1 });
     },
     // Use the PayloadAction type to declare the contents of `action.payload`
     removeFromCart: (state, action: PayloadAction<Product>) => {
-      let {items} = state;
-      const {payload: product} = action;
+      let { items } = state;
+      const { payload: product } = action;
       const existingItem = items.find(i => i.product.id === product.id);
       if (!existingItem) return;
       if (existingItem.count > 1) {
@@ -38,14 +44,13 @@ export const cartSlice = createSlice({
       }
       state.items = items.filter(i => i.product.id !== product.id);
     },
-    clearCart: (state) => {
+    clearCart: state => {
       state.items = [];
-    }
+    },
   },
 });
 
-export const {addToCart, removeFromCart, clearCart} = cartSlice.actions;
-
+export const { addToCart, removeFromCart, clearCart, updateFromApi } = cartSlice.actions;
 
 // The function below is called a selector and allows us to select a value from
 // the state. Selectors can also be defined inline where they're used instead of

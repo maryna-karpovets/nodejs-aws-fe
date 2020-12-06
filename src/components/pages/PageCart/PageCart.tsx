@@ -8,7 +8,8 @@ import Typography from '@material-ui/core/Typography';
 import ReviewCart from 'components/pages/PageCart/components/ReviewCart';
 import ReviewOrder from 'components/pages/PageCart/components/ReviewOrder';
 import {useDispatch, useSelector} from "react-redux";
-import {selectCartItems, clearCart} from "store/cartSlice";
+import {selectCartItems} from "store/cartSlice";
+import { clearCartThunk } from 'store/cartThunks';
 import PaperLayout from "components/PaperLayout/PaperLayout";
 import {Formik, Form, FormikProps, FormikValues, FastField} from "formik";
 import Grid from "@material-ui/core/Grid";
@@ -118,9 +119,9 @@ export default function PageCart() {
         items: cartItems.map(i => ({productId: i.product.id, count: i.count})),
         address
       });
-      axios.put(`${API_PATHS.order}/order`, formattedValues)
+      axios.post(`${API_PATHS.cart}/profile/cart/checkout`, formattedValues)
         .then(() => {
-          dispatch(clearCart());
+          dispatch(clearCartThunk());
           setActiveStep(activeStep + 1);
         });
     }
@@ -147,13 +148,13 @@ export default function PageCart() {
           enableReinitialize={false}
           initialValues={initialAddressValues}
           validationSchema={AddressSchema}
-          isInitialValid={false}
           onSubmit={() => undefined}
         >
           {(props: FormikProps<FormikValues>) => {
             const {values, isValid} = props;
             setAddress(values);
             setIsFormValid(isValid);
+            
             return (
               <Form>
                 {isCartEmpty && activeStep === 0 && <CartIsEmpty/>}
